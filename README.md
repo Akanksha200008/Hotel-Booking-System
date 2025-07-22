@@ -85,7 +85,10 @@ Data is updated in real-time via embedded MongoDB queries when bookings or cance
 ![Home Page](images/home-page.png)
 
 ### 🖥️ Admin Dashboard
-![Admin Dashboard](admin-dashboard.png)
+![Admin Dashboard](images/admin-dashboard.png)
+
+## Admin Adding Rooms
+![Admin Adding Available Rooms](images/admin-adding-rooms.png)
 
 ### 🔍 Room Filter Feature  
 ![Room Filter](images/filter-rooms.png)
@@ -93,8 +96,16 @@ Data is updated in real-time via embedded MongoDB queries when bookings or cance
 ### 🖥️ Customer Dashboard
 ![Customer Dashboard](images/customer-login.png)
 
+### Available Rooms
+![Available Rooms](images/available-rooms.png)
+
+### Room Booking By Customer
+![Room Booking By Customer](images/room-booking-bycustomer.png)
+
 ### 📜 Booking History Page  
 ![My Bookings](images/customer-bookings-history.png) 
+
+
 
 ---
 
