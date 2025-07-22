@@ -1,0 +1,130 @@
+<!-- booked_rooms.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Bookings</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+    }
+
+    .navbar {
+      background-color: #007BFF;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .navbar .buttons button {
+      background-color: #0056b3;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 4px;
+      margin-left: 10px;
+    }
+
+    .hero {
+      background-color: #e6f0ff;
+      text-align: center;
+      padding: 50px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+
+    .card {
+      background-color: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .card button {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="navbar">
+    <span>Welcome, <span id="username"></span></span>
+    <div class="buttons">
+      <button onclick="window.location.href='rooms.html'">Available Rooms</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>Your Booked Rooms</h1>
+    <p>Review or manage your reservations</p>
+  </div>
+
+  <div class="container" id="bookingsList"></div>
+
+  <script>
+    const user = localStorage.getItem("customer");
+    if (!user) {
+      alert("Please login to continue.");
+      window.location.href = "customer_auth.html";
+    }
+
+    document.getElementById("username").innerText = user;
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "index.html";
+    }
+
+    async function loadBookings() {
+      const res = await fetch(`http://127.0.0.1:5000/my-bookings?guest=${user}`);
+      const bookings = await res.json();
+      const list = document.getElementById("bookingsList");
+      list.innerHTML = "";
+
+      if (!bookings.length) {
+        list.innerHTML = "<p>No bookings found.</p>";
+        return;
+      }
+
+      bookings.forEach(b => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <p><strong>Room:</strong> ${b.room_number}</p>
+          <p><strong>Check-in:</strong> ${b.checkin}</p>
+          <p><strong>Check-out:</strong> ${b.checkout}</p>
+          <button onclick="cancelBooking('${b._id}')">Cancel Booking</button>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    async function cancelBooking(id) {
+      if (!confirm("Are you sure you want to cancel this booking?")) return;
+      const res = await fetch(`http://127.0.0.1:5000/cancel-booking/${id}`, {
+        method: "DELETE"
+      });
+      const data = await res.json();
+      alert(data.message || data.error);
+      loadBookings();
+    }
+
+    loadBookings();
+  </script>
+</body>
+</html>

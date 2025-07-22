@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Book Your Stay | Luxury Hotel</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: url('images/bookpic.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    .navbar {
+      background-color: #007BFF;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar span {
+      font-size: 16px;
+    }
+
+    .navbar .right {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .navbar button {
+      background-color: #0056b3;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 80px 30px;
+      color: white;
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .hero p {
+      font-size: 20px;
+      font-weight: 500;
+    }
+
+    .form-container {
+      background-color: white;
+      max-width: 500px;
+      margin: 30px auto;
+      padding: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    input[type="text"],
+    input[type="date"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    button.book {
+      width: 100%;
+      padding: 12px;
+      background-color: #28a745;
+      color: white;
+      font-size: 18px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button.book:hover {
+      background-color: #218838;
+    }
+
+    #message {
+      text-align: center;
+      font-weight: bold;
+      margin-top: 15px;
+      color: #333;
+    }
+
+    #roomInfo {
+      font-weight: 500;
+      margin-bottom: 20px;
+      color: #444;
+    }
+
+    .room-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 30px;
+    }
+
+    .room-card {
+      background-color: #fff;
+      width: 280px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .room-card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+    }
+
+    .room-card .info {
+      padding: 15px;
+    }
+
+    .room-card h3 {
+      margin: 0 0 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <div class="navbar">
+    <span>Welcome, <strong id="userWelcome"></strong></span>
+    <div class="right">
+      <button onclick="window.location.href='booked_rooms.html'">My Bookings</button>
+      <button onclick="window.location.href='rooms.html'">Available Rooms</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Confirm Your Booking</h1>
+    <p>Secure your stay by filling out the details below</p>
+  </div>
+
+  <!-- Booking Form -->
+  <div class="form-container">
+    <h2>Booking Form</h2>
+    <p id="roomInfo"></p>
+    <form id="bookingForm">
+      <input type="text" id="guestName" placeholder="Your Full Name" required>
+      <label for="checkin">Check-in Date</label>
+      <input type="date" id="checkin" required>
+      <label for="checkout">Check-out Date</label>
+      <input type="date" id="checkout" required>
+      <button type="submit" class="book">Book Now</button>
+    </form>
+    <p id="message"></p>
+  </div>
+
+  <!-- Available Rooms List -->
+  <div class="room-list" id="availableRooms"></div>
+
+  <script>
+    const user = localStorage.getItem("customer");
+    document.getElementById("userWelcome").innerText = user || "Guest";
+
+    if (!user) {
+      alert("You must be logged in to book a room.");
+      window.location.href = "customer_auth.html";
+    }
+
+    function logout() {
+      localStorage.removeItem("customer");
+      localStorage.removeItem("selectedRoomId");
+      window.location.href = "index.html";
+    }
+
+    const roomId = localStorage.getItem("selectedRoomId");
+    const form = document.getElementById("bookingForm");
+    const msg = document.getElementById("message");
+    const roomInfoDisplay = document.getElementById("roomInfo");
+
+    let selectedRoom = null;
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const guestName = document.getElementById("guestName").value;
+      const checkin = document.getElementById("checkin").value;
+      const checkout = document.getElementById("checkout").value;
+
+      const res = await fetch("http://127.0.0.1:5000/book", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          room_id: roomId,
+          guest_name: guestName,
+          checkin,
+          checkout
+        })
+      });
+
+      const data = await res.json();
+      msg.innerText = data.message || data.error;
+
+      if (res.ok) {
+        document.getElementById("guestName").value = "";
+        document.getElementById("checkin").value = "";
+        document.getElementById("checkout").value = "";
+        localStorage.removeItem("selectedRoomId");
+        fetchAvailableRooms();
+      }
+    });
+
+    async function fetchSelectedRoomDetails() {
+      const res = await fetch("http://127.0.0.1:5000/rooms");
+      const rooms = await res.json();
+      selectedRoom = rooms.find(r => r._id === roomId);
+
+      if (selectedRoom) {
+        roomInfoDisplay.innerHTML = `
+          You are booking <strong>${selectedRoom.type}</strong> - Room <strong>${selectedRoom.room_number}</strong><br>
+          Hotel: <strong>${selectedRoom.hotel_name || "N/A"}</strong>
+        `;
+      } else {
+        roomInfoDisplay.innerText = "Room details not found.";
+      }
+    }
+
+    async function fetchAvailableRooms() {
+      const res = await fetch("http://127.0.0.1:5000/rooms");
+      const rooms = await res.json();
+      const list = document.getElementById("availableRooms");
+      list.innerHTML = "";
+
+      const available = rooms.filter(r => r.available);
+
+      available.forEach(room => {
+        const image = room.type === "Suite"
+          ? "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80"
+          : room.type === "Double"
+          ? "https://images.unsplash.com/photo-1590490360184-cb0c8fc5974d?auto=format&fit=crop&w=900&q=80"
+          : "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=900&q=80";
+
+        const card = document.createElement("div");
+        card.className = "room-card";
+        card.innerHTML = `
+          <img src="${image}" alt="${room.type}">
+          <div class="info">
+            <h3>Room ${room.room_number} - ${room.type}</h3>
+            <p><strong>Price:</strong> $${room.price}/night</p>
+            <p><strong>Hotel:</strong> ${room.hotel_name || "N/A"}</p>
+            <p><strong>Amenities:</strong> ${room.amenities.join(", ")}</p>
+            <button onclick="bookRoom('${room._id}')" class="book">Book Now</button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function bookRoom(roomId) {
+      localStorage.setItem("selectedRoomId", roomId);
+      window.location.href = "booking.html";
+    }
+
+    fetchSelectedRoomDetails();
+    fetchAvailableRooms();
+  </script>
+</body>
+</html>

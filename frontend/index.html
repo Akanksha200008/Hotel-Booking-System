@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hotel Booking System</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      height: 100%;
+      background: url('images/homepage.png') no-repeat center center fixed;
+      background-size: cover;
+      position: relative;
+      color: white;
+    }
+
+    .overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 0;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 30px;
+    }
+
+    h1 {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 20px;
+      margin-bottom: 40px;
+    }
+
+    .hero p {
+      font-size: 40px;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      padding: 15px 30px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 10px 0;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .admin-section {
+      margin-top: 60px;
+      padding: 20px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+
+    .admin-section p {
+      font-size: 18px;
+      margin-bottom: 15px;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="overlay"></div>
+  <div class="content">
+    <h1>Welcome to Hotel Booking</h1>
+    <p>Your comfort stay starts here. Browse and book luxury rooms easily.</p>
+    <button onclick="window.location.href='rooms.html'">Browse Rooms</button>
+    <div class="admin-section">
+      <p>Are you the owner? Update your hotel details</p>
+      <button onclick="window.location.href='admin_auth.html'">Admin Dashboard</button>
+    </div>
+  </div>
+
+</body>
+</html>

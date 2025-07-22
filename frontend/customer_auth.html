@@ -1,0 +1,145 @@
+<!-- customer_auth.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Customer Authentication | Hotel Booking</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: url('images/regpic.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+    .navbar {
+      background-color: #007BFF;
+      color: white;
+      padding: 18px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 18px;
+    }
+    .navbar span {
+      font-size: 22px;
+      font-weight: bold;
+    }
+    .container {
+      max-width: 500px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      padding: 40px 35px;
+      margin: 80px auto;
+      border-radius: 16px;
+      text-align: center;
+      color: white;
+    }
+    input, button {
+      width: 100%;
+      padding: 14px;
+      margin: 12px 0;
+      border-radius: 6px;
+      font-size: 17px;
+    }
+    input {
+      background-color: rgba(255, 255, 255, 0.85);
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #message {
+      margin-top: 12px;
+      font-weight: bold;
+      font-size: 16px;
+      color: #ffdddd;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <span>Welcome to Hotel Booking</span>
+    <div><a href="index.html" style="color:white; text-decoration:none;">Home</a></div>
+  </div>
+
+  <div class="container">
+    <h2 id="formTitle">Your Comfort Stay Starts Here</h2>
+
+    <!-- Registration Form -->
+    <div id="registerForm">
+      <input type="email" id="regEmail" placeholder="Gmail ID" required>
+      <input type="text" id="regUsername" placeholder="Username" required>
+      <input type="password" id="regPassword" placeholder="Password" required>
+      <button onclick="registerUser()">Register</button>
+      <p>Already have an account? <a href="#" onclick="toggleForm('login')">Login here</a></p>
+    </div>
+
+    <!-- Login Form -->
+    <div id="loginForm" style="display:none">
+      <input type="email" id="loginEmail" placeholder="Gmail ID" required>
+      <input type="password" id="loginPassword" placeholder="Password" required>
+      <button onclick="loginUser()">Login</button>
+      <p>Don't have an account? <a href="#" onclick="toggleForm('register')">Register here</a></p>
+    </div>
+
+    <p id="message"></p>
+  </div>
+
+  <script>
+    function toggleForm(mode) {
+      document.getElementById('registerForm').style.display = mode === 'register' ? 'block' : 'none';
+      document.getElementById('loginForm').style.display = mode === 'login' ? 'block' : 'none';
+      document.getElementById('formTitle').innerText =
+        mode === 'register' ? 'Your Comfort Stay Starts Here' : 'Welcome Back to Hotel Booking';
+      document.getElementById('message').innerText = '';
+    }
+
+    async function registerUser() {
+      const email = document.getElementById("regEmail").value;
+      const username = document.getElementById("regUsername").value;
+      const password = document.getElementById("regPassword").value;
+
+      const res = await fetch("http://127.0.0.1:5000/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, username, password, role: "customer" })
+      });
+
+      const data = await res.json();
+      document.getElementById("message").innerText = data.message || data.error;
+
+      if (res.status === 201) toggleForm('login');
+    }
+
+    async function loginUser() {
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+
+      const res = await fetch("http://127.0.0.1:5000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+
+      if (data.role === "customer") {
+        localStorage.setItem("customer", data.username);
+        const selectedRoomId = localStorage.getItem("selectedRoomId");
+        window.location.href = "rooms.html";
+      } else {
+        document.getElementById("message").innerText = "Invalid login for customer.";
+      }
+    }
+
+    toggleForm('register');
+  </script>
+</body>
+</html>

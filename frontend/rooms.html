@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Available Rooms | Hotel Booking</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f5f5;
+    }
+
+    .navbar {
+      background-color: #007BFF;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar h1 {
+      font-size: 22px;
+      margin: 0;
+    }
+
+    .navbar-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .navbar button {
+      background-color: #0056b3;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .hero {
+      background: url('images/hotel.png') no-repeat center center fixed;
+      background-size: cover;
+      text-align: center;
+      color: white;
+      padding: 100px 30px;
+    }
+
+    .hero h1 {
+      font-size: 52px;
+      margin-bottom: 10px;
+    }
+
+    .hero p {
+      font-size: 24px;
+      font-weight: 500;
+    }
+
+    .filter-bar {
+      background-color: #fff;
+      padding: 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    select, input, button {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      background-color: #007BFF;
+      color: white;
+      cursor: pointer;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 30px;
+    }
+
+    .room-card {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      width: 300px;
+      overflow: hidden;
+    }
+
+    .room-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+
+    .room-details {
+      padding: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <h1>Welcome to Hotel Booking</h1>
+    <div class="navbar-buttons">
+      <button onclick="window.location.href='index.html'">Home</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>Explore Our Rooms</h1>
+    <p>Book your perfect stay today</p>
+  </div>
+
+  <div class="filter-bar">
+    <select id="filterType">
+      <option value="">All Types</option>
+      <option value="Single">Single</option>
+      <option value="Double">Double</option>
+      <option value="Suite">Suite</option>
+    </select>
+    <input type="number" id="filterPrice" placeholder="Max Price">
+    <button onclick="fetchRooms()">Apply Filters</button>
+  </div>
+
+  <div class="container" id="roomList"></div>
+
+  <script>
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }
+
+    async function fetchRooms() {
+      const res = await fetch("http://127.0.0.1:5000/rooms");
+      const rooms = await res.json();
+
+      const type = document.getElementById("filterType").value;
+      const price = document.getElementById("filterPrice").value;
+
+      const filtered = rooms.filter(r => {
+        return (!type || r.type === type) && (!price || r.price <= price);
+      });
+
+      const roomList = document.getElementById("roomList");
+      roomList.innerHTML = "";
+
+      filtered.forEach(r => {
+        const type = (r.type || "").trim().toLowerCase();
+
+      let image = "";
+
+      if (type.includes("suite")) {
+        image = "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80";
+      } else if (type.includes("double")) {
+        image = "https://images.unsplash.com/photo-1590490360184-cb0c8fc5974d?auto=format&fit=crop&w=900&q=80";
+      } else {
+        image = "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=900&q=80";
+      }
+
+        const div = document.createElement("div");
+        div.className = "room-card";
+        div.innerHTML = `
+          <img src="${image}" alt="Room">
+          <div class="room-details">
+            <h3>Room ${r.room_number} - ${r.type}</h3>
+            <p><strong>Hotel:</strong> ${r.hotel_name || "N/A"}</p>
+            <p><strong>Price:</strong> $${r.price}/night</p>
+            <p><strong>Amenities:</strong> ${r.amenities.join(", ")}</p>
+            <button onclick="bookRoom('${r._id}')">Book Now</button>
+          </div>
+        `;
+        roomList.appendChild(div);
+      });
+    }
+
+    function bookRoom(id) {
+      localStorage.setItem("selectedRoomId", id);
+      const customer = localStorage.getItem("customer");
+      if (!customer) {
+        window.location.href = "customer_auth.html";
+      } else {
+        window.location.href = "booking.html";
+      }
+    }
+
+    fetchRooms();
+  </script>
+</body>
+</html>

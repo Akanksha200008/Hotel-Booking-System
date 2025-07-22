@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Login / Register</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: url('images/logpic.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+    .navbar {
+      background-color: #007BFF;
+      color: white;
+      padding: 18px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 18px;
+    }
+    .navbar span {
+      font-size: 22px;
+      font-weight: bold;
+    }
+    .navbar a, .navbar button {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: bold;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    .container {
+      max-width: 500px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      padding: 40px 35px;
+      margin: 80px auto;
+      border-radius: 16px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      color: white;
+      font-size: 18px;
+    }
+    h2 {
+      font-size: 26px;
+      margin-bottom: 25px;
+    }
+    input, button {
+      width: 100%;
+      padding: 14px;
+      margin: 12px 0;
+      border-radius: 6px;
+      font-size: 17px;
+    }
+    input {
+      background-color: rgba(255, 255, 255, 0.85);
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .link {
+      text-align: center;
+      margin-top: 25px;
+      font-size: 16px;
+    }
+    .link a {
+      color: #cce4ff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .link a:hover {
+      text-decoration: underline;
+    }
+    #message {
+      margin-top: 12px;
+      color: #ffdddd;
+      font-weight: bold;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <span>🏨 Welcome Owner!!!</span>
+    <div>
+      <button onclick="window.location.href='index.html'">Home</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <h2 id="formTitle">Admin Registration</h2>
+    <form id="authForm">
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="text" id="username" placeholder="Username" />
+      <input type="text" id="hotel" placeholder="Hotel Name" />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit" id="formBtn">Register</button>
+    </form>
+    <div class="link" id="toggleLink">
+      Already have an account? <a href="#" onclick="switchToLogin()">Login</a>
+    </div>
+    <p id="message"></p>
+  </div>
+
+  <script>
+    let isLogin = false;
+    const form = document.getElementById("authForm");
+    const formTitle = document.getElementById("formTitle");
+    const message = document.getElementById("message");
+    const formBtn = document.getElementById("formBtn");
+    const hotelField = document.getElementById("hotel");
+    const usernameField = document.getElementById("username");
+
+    function updateToggleLink() {
+      const toggleLink = document.getElementById("toggleLink");
+      if (isLogin) {
+        toggleLink.innerHTML = `Want to register? <a href="#" onclick="switchToRegister()">Register</a>`;
+      } else {
+        toggleLink.innerHTML = `Already have an account? <a href="#" onclick="switchToLogin()">Login</a>`;
+      }
+    }
+
+    function switchToLogin() {
+      isLogin = true;
+      formTitle.innerText = "Admin Login";
+      hotelField.style.display = "none";
+      usernameField.style.display = "none";
+      hotelField.removeAttribute("required");
+      usernameField.removeAttribute("required");
+      formBtn.innerText = "Login";
+      message.innerText = "";
+      document.getElementById("email").value = "";
+      document.getElementById("username").value = "";
+      document.getElementById("hotel").value = "";
+      document.getElementById("password").value = "";
+      updateToggleLink();
+    }
+
+    function switchToRegister() {
+      isLogin = false;
+      formTitle.innerText = "Admin Registration";
+      hotelField.style.display = "block";
+      usernameField.style.display = "block";
+      hotelField.setAttribute("required", "true");
+      usernameField.setAttribute("required", "true");
+      formBtn.innerText = "Register";
+      message.innerText = "";
+      updateToggleLink();
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const username = usernameField.value;
+      const password = document.getElementById("password").value;
+      const hotel = hotelField.value;
+
+      const endpoint = isLogin ? "/login" : "/register";
+      const payload = isLogin
+        ? { email, password }
+        : { email, username, password, role: "admin", hotel_name: hotel };
+
+      try {
+        const res = await fetch(`http://127.0.0.1:5000${endpoint}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          if (isLogin) {
+            if (data.role !== "admin") {
+              message.innerText = "Access denied. Only admins can log in here.";
+              return;
+            }
+            localStorage.setItem("admin", data.username);
+            localStorage.setItem("hotel_name", data.hotel_name);
+            window.location.href = "admin.html";
+          } else {
+            message.style.color = "lightgreen";
+            message.innerText = "Registered successfully. Please login.";
+            switchToLogin();
+          }
+        } else {
+          message.innerText = data.error || "Something went wrong.";
+        }
+      } catch (err) {
+        message.innerText = "Server error: " + err.message;
+      }
+    });
+
+    // Load registration form by default
+    switchToRegister();
+  </script>
+</body>
+</html>
