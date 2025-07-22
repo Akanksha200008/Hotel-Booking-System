@@ -81,22 +81,20 @@ Data is updated in real-time via embedded MongoDB queries when bookings or cance
 
 ---
 
-## 📷 Screenshots
-
-> You can upload screenshots in an `images/` folder and reference them like so:
-
 ### 🖥️ Home Page 
-![Home Page](images/Home Page.png)
+![Home Page](images/home-page.png)
 
 ### 🖥️ Admin Dashboard
-![Admin Dashboard](Admin Dashboard.png)
+![Admin Dashboard](admin-dashboard.png)
 
 ### 🔍 Room Filter Feature  
-![Room Filter](images/Filter Rooms.png)
+![Room Filter](images/filter-rooms.png)
+
+### 🖥️ Customer Dashboard
+![Customer Dashboard](images/customer-login.png)
 
 ### 📜 Booking History Page  
-![My Bookings](images/My Bookings.png) 
-
+![My Bookings](images/customer-bookings-history.png) 
 
 ---
 
